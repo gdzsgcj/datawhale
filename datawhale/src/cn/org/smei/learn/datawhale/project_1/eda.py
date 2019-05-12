@@ -87,7 +87,54 @@ def transform_datatype(df):
     df.drop(['reg_preference_for_trad'],axis=1,inplace=True)
     return df
 
+def missing_value_processing(df):
+    """
+    本方法主要用于缺失值处理
+    """
+    # 首先查看缺失值分布情况,先对缺失值进行统计
+    df_miss = df.isnull().sum().sort_values()
+    # 统计出存在缺失的数据
+    df_miss = df_miss[df_miss.values>0]
+    print('缺失值分布:\n',df_miss)
+    # 共计有57个列存在缺失情况
+    # 删除缺失值在24以下的全部特征 占总数量比不足1%的数据
+    dropna_col = list(df_miss[df_miss.values<25].index)
+    df = df.dropna(subset=dropna_col)
+    # 观察该列 avg_price_top_last_12_valid_month 发现数据偏差不大,所以采用均值填充
+    print(df['avg_price_top_last_12_valid_month'].describe())
+    df['avg_price_top_last_12_valid_month'] = df['avg_price_top_last_12_valid_month'].fillna(df['avg_price_top_last_12_valid_month'].mean())
+    #print(df['avg_price_top_last_12_valid_month'].describe())
+    # 这儿再次查看结果,发现填充后的数据和填充前的数据，在统计上面没有发生太大变化
+    
+    # 分析下一组数据 空缺数在297到424之间
+    cols = list(df_miss[df_miss.values<425].index)
+    # 移除两个日期
+    cols.remove('loans_latest_time')
+    cols.remove('latest_query_time')
+    # 发现这些数据基本都和违约时间等有联系 基本上偏差也不太大，采用众数填充
+    for col in cols:
+        df[col] = df[col].fillna(df[col].median())
+    
+    #日期类型采用后项填充
+    df['loans_latest_time'] = df['loans_latest_time'].fillna(method='bfill')
+    df['latest_query_time'] = df['latest_query_time'].fillna(method='bfill')
+        
+    # student_feature 学生特征
+    print(df['student_feature'].value_counts())
+    # 这列缺失过多，做删除处理
+    df = df.drop('student_feature',axis=1)
+    # 返回处理后的数据
+    return df   
 
+def train_test_spilt_local(df,test_size=0.3,random_state=2018):
+    """切分数据集"""
+    X = df.drop('status',axis=1)
+    y = df['status']
+    X_train,y_train,X_test,y_test = train_test_split(X,y,test_size=0.3,random_state=2018)
+    print(X_train.shape,X_test.shape)
+    return X_train,y_train,X_test,y_test
+    
+    
 def main():
     """第一节：EDA 探索性数据分析"""
     """1.1:读取和预览数据"""
@@ -96,6 +143,10 @@ def main():
     df = feature_analysis_clear(df)
     """1.3:数据类型转换"""
     df = transform_datatype(df)
+    """1.4:缺失值处理"""
+    df = missing_value_processing(df)
+    """1.5: 数据切分"""
+    X_train,y_train,X_test,y_test = train_test_spilt_local(df)
     
     
 if __name__ == '__main__':
