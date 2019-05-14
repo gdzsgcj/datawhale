@@ -147,7 +147,8 @@ def main():
     df = missing_value_processing(df)
     """1.5: 数据切分"""
     X_train,y_train,X_test,y_test = train_test_spilt_local(df)
-    
+    """将数据写入文件"""
+    df.to_csv('../dataset/data1.csv', index=None)
     
 if __name__ == '__main__':
     main()
