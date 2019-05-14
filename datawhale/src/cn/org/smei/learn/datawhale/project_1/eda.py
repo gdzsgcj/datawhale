@@ -26,7 +26,7 @@ def read_preview_data():
     """
     本方法主要用于数据预览,类型分析等
     """
-    df = pd.read_csv(DATA_FILE,encoding='gbk')
+    df = pd.read_csv(DATA_FILE,encoding='gbk',parse_dates=['first_transaction_time','latest_query_time','loans_latest_time'])
     print(df.head(3))
     # 查看数据类型和缺失情况
     print(df.info())
@@ -61,13 +61,6 @@ def transform_datatype(df):
     本方法的主要作用是对数据类型进行转换
     """
     # 先预览一下经过清理后主要纯在的数据类型
-    print(df.info())
-    # 当前数据中，存在3个对象类型,其实主要是三个日期类型和一个分类类型 下面将对他们进行转换
-    # first_transaction_time,latest_query_time,loans_latest_time 这三个需要转换为日期类型
-    # reg_preference_for_trad 这个是分类类型,要将它转换为离散化变量
-    df['first_transaction_time'] = pd.to_datetime(df['first_transaction_time'])
-    df['latest_query_time'] = pd.to_datetime(df['latest_query_time'])
-    df['loans_latest_time'] = pd.to_datetime(df['loans_latest_time'])
     print(df.info())
     # 查看一下reg_preference_for_trad 数据分布情况
     print(df['reg_preference_for_trad'].value_counts())
@@ -118,7 +111,7 @@ def missing_value_processing(df):
     #日期类型采用后项填充
     df['loans_latest_time'] = df['loans_latest_time'].fillna(method='bfill')
     df['latest_query_time'] = df['latest_query_time'].fillna(method='bfill')
-        
+    print('\n填充日期:\n',df['loans_latest_time'].head(5))    
     # student_feature 学生特征
     print(df['student_feature'].value_counts())
     # 这列缺失过多，做删除处理
