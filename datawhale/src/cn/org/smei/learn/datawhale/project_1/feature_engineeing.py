@@ -130,14 +130,21 @@ def information_value_select(df):
     """
         通过IV值进行特征选择
     """   
-    X = df.drop('status',axis=1)
+    X = df.drop(['status','first_transaction_time','latest_query_time','loans_latest_time'],axis=1)
     y = df['status']
     iv_dict = woe(X,y)
     dict = sorted(iv_dict.items(), key = lambda x : x[1], reverse = True)
+    print('Information Value:\n','*' * 40)
     # iv 0.02以上才有价值
+    retain_col = ['status']
+    importance_score = 0.02
     for i,v in dict:
         print('列名:',i ,', 重要性评分:',v)
+        if v > importance_score:
+            retain_col.append(i)
     # 这儿可以通过分值筛选出列
+    print('\n有价值的列:',retain_col)
+    return retain_col
     
 def randomforest_select(df):
     """
@@ -179,9 +186,9 @@ def main():
     # 2.1 生成新的列
     df = create_field_by_df(df)
     # 2.2 通过IV值进行特征选择 iv 值>0.02才有价值
-    information_value_select(df)
+    retain_col = information_value_select(df)
     # 2.3 通过随机森林选择特征 feature_importances_ > 0.01才有价值
-    retain_col = randomforest_select(df)
+    randomforest_select(df)
     # 2.3 通过LassoCV进行特征选择
     lassocv_feature_select(df)
     
