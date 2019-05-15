@@ -19,6 +19,7 @@ from sklearn.utils.multiclass import type_of_target
 from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LassoCV
+from sklearn.preprocessing import StandardScaler
 
 def load_data():
     """
@@ -72,6 +73,20 @@ def create_field_by_df(df):
     return df
 
 
+def data_stand_scale(df):
+    """
+    对数据进行标准化处理
+    """
+    X = df.drop(['status','first_transaction_time','latest_query_time','loans_latest_time'],axis=1)
+    y = df['status']
+    col_names = X.columns
+    scale = StandardScaler().fit(X)
+    X_scaled = scale.transform(X)
+    new_df = pd.DataFrame(X_scaled,columns=col_names)
+    new_df['status'] = y
+    print('\n标准化后的数据')
+    print(new_df.head(5))
+    return new_df
 
 def discrete(x):
     """
@@ -130,7 +145,7 @@ def information_value_select(df):
     """
         通过IV值进行特征选择
     """   
-    X = df.drop(['status','first_transaction_time','latest_query_time','loans_latest_time'],axis=1)
+    X = df.drop(['status'],axis=1)
     y = df['status']
     iv_dict = woe(X,y)
     dict = sorted(iv_dict.items(), key = lambda x : x[1], reverse = True)
@@ -150,7 +165,7 @@ def randomforest_select(df):
     """
     通过随机森林选择特征
     """
-    X = df.drop(['status','first_transaction_time','latest_query_time','loans_latest_time'],axis=1)
+    X = df.drop(['status'],axis=1)
     y = df['status']
     forest = RandomForestClassifier(n_jobs=-1)
     forest.fit(X,y)
@@ -172,7 +187,7 @@ def lassocv_feature_select(df):
     """
     通过LassoCV 进行特征选择
     """    
-    X = df.drop(['status','first_transaction_time','latest_query_time','loans_latest_time'],axis=1)
+    X = df.drop(['status'],axis=1)
     y = df['status']
     model_lasso = LassoCV(alphas = [0.1,1,0.001, 0.0005])
     model_lasso.fit(X,y)
@@ -185,10 +200,13 @@ def main():
     df = load_data()
     # 2.1 生成新的列
     df = create_field_by_df(df)
+    # 2.2 对数据进行标准化处理
+    df = data_stand_scale(df)
+    
     # 2.2 通过IV值进行特征选择 iv 值>0.02才有价值
-    retain_col = information_value_select(df)
+    information_value_select(df)
     # 2.3 通过随机森林选择特征 feature_importances_ > 0.01才有价值
-    randomforest_select(df)
+    retain_col = randomforest_select(df)
     # 2.3 通过LassoCV进行特征选择
     lassocv_feature_select(df)
     
