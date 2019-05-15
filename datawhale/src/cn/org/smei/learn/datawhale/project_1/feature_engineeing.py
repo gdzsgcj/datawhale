@@ -134,6 +134,7 @@ def information_value_select(df):
     y = df['status']
     iv_dict = woe(X,y)
     dict = sorted(iv_dict.items(), key = lambda x : x[1], reverse = True)
+    # iv 0.02以上才有价值
     for i,v in dict:
         print('列名:',i ,', 重要性评分:',v)
     # 这儿可以通过分值筛选出列
@@ -149,9 +150,17 @@ def randomforest_select(df):
     importance = forest.feature_importances_
     dict_forest = dict(zip(X.columns,importance))
     dict_forest = sorted(dict_forest.items(),key = lambda x:x[1],reverse = True)
+    print('随机森林:\n','*' * 40)
+    importance_score = 0.01
+    retain_col = ['status']
     for i,v in dict_forest:
         print('列名:',i ,', 重要性评分:',v)
-    
+        if v > importance_score :
+            retain_col.append(i)
+            
+    print('\n有价值的列:',retain_col)        
+    return retain_col
+            
 def lassocv_feature_select(df):
     """
     通过LassoCV 进行特征选择
@@ -169,12 +178,17 @@ def main():
     df = load_data()
     # 2.1 生成新的列
     df = create_field_by_df(df)
-    # 2.2 通过IV值进行特征选择
+    # 2.2 通过IV值进行特征选择 iv 值>0.02才有价值
     information_value_select(df)
-    # 2.3 通过随机森林选择特征
-    randomforest_select(df)
+    # 2.3 通过随机森林选择特征 feature_importances_ > 0.01才有价值
+    retain_col = randomforest_select(df)
     # 2.3 通过LassoCV进行特征选择
     lassocv_feature_select(df)
+    
+    # 生成新的数据集
+    df_new = df[retain_col]
+    df_new.to_csv('../dataset/data2.csv',index = None)
+    
     
 if __name__ == '__main__':
     main()
