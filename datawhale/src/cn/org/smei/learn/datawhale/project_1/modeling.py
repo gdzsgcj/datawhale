@@ -51,7 +51,7 @@ def model_predict(X_train,X_test,y_train,y_test):
     采用各类模型进行预测
     """
     classifiers = {
-        'LogisticRegression' : LogisticRegression(),
+        'LogisticRegression' : LogisticRegression(C=0.001),
         'Support Vector Machine Classifier' : SVC(),
         'Decision Tree Classifier' : DecisionTreeClassifier(),
         'Random Forest Classifier' : RandomForestClassifier(),
