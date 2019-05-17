@@ -172,7 +172,6 @@ def main():
     X_train,X_test,y_train,y_test = load_data()
     
     # 2.1 通过模型调参优化模型
-    # 2.1.1 逻辑回归
     model_adjustment_optimization_score(X_train,X_test,y_train,y_test)
     
     
