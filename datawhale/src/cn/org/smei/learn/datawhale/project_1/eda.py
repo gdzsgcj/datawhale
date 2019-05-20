@@ -36,6 +36,7 @@ def read_preview_data():
     # 返回数据
     return df
 
+
 def feature_analysis_clear(df):
     """
     本方法主要用于特征清理
@@ -55,6 +56,17 @@ def feature_analysis_clear(df):
 #     plt.show()
     # 返回最后删除无关特征后的数据
     return df
+
+def feature_corr_analysis(df):
+    """
+    特征相关性分析
+    """
+#     X_train = df.drop('status', axis=1)
+#     y_train = df['status']
+#     
+    print('\n打印相关性矩阵\n',df.corr()['status'])
+    
+    
 
 def transform_datatype(df):
     """
@@ -134,14 +146,18 @@ def main():
     df = read_preview_data()
     """1.2:无关特征删除"""
     df = feature_analysis_clear(df)
-    """1.3:数据类型转换"""
-    df = transform_datatype(df)
-    """1.4:缺失值处理"""
-    df = missing_value_processing(df)
-    """1.5: 数据切分"""
-    X_train,y_train,X_test,y_test = train_test_spilt_local(df)
-    """将数据写入文件"""
-    df.to_csv('../dataset/data1.csv', index=None)
+    
+    """1.2.1 对特征的相关性进行分析"""
+    df = feature_corr_analysis(df)
+    
+#     """1.3:数据类型转换"""
+#     df = transform_datatype(df)
+#     """1.4:缺失值处理"""
+#     df = missing_value_processing(df)
+#     """1.5: 数据切分"""
+#     X_train,y_train,X_test,y_test = train_test_spilt_local(df)
+#     """将数据写入文件"""
+#     df.to_csv('../dataset/data1.csv', index=None)
     
 if __name__ == '__main__':
     main()
